@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp2.2</TargetFramework>
+    <RootNamespace>OrcaBot_Shared_Types</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Folder Include="Types\" />
+    <Folder Include="Helpers\" />
+  </ItemGroup>
+</Project>
