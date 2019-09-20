@@ -1,11 +1,11 @@
-﻿using OrcaBot.SharedTypes.Enums;
-using OrcaBot.SharedTypes;
+﻿using Orcabot.Types.Enums;
+using Orcabot.Types;
 
 
 using System.Collections.Generic;
 using System;
 
-namespace OrcaBot.Helpers
+namespace Orcabot.Helpers
 {
     public static class SystemHelper
     {
@@ -14,10 +14,10 @@ namespace OrcaBot.Helpers
         /// </summary>
         /// <returns>A new List of Systems with Material Traders</returns>
         /// <param name="systems">List of Systems</param>
-        public static IList<SharedTypes.System> FilterMaterialTrader(this IList<SharedTypes.System> systems )
+        public static IList<Types.System> FilterMaterialTrader(this IList<Types.System> systems )
         {
 
-            var returnList = new List<SharedTypes.System>();
+            var returnList = new List<Types.System>();
             foreach(var system in systems)
             {
                 if(system.HasMatTrader())
@@ -29,7 +29,7 @@ namespace OrcaBot.Helpers
         }
 
 
-        public static bool HasMatTrader(this SharedTypes.System system)
+        public static bool HasMatTrader(this Types.System system)
         {
             return (
                     system.Stations.FilterFacility(StationFacility.TraderEncoded).Count > 0 ||
@@ -38,7 +38,7 @@ namespace OrcaBot.Helpers
                     system.Stations.FilterFacility(StationFacility.TraderUnknown).Count > 0
                     );
         }
-        public static StationFacility GetMatTraderType(this SharedTypes.System system)
+        public static StationFacility GetMatTraderType(this Types.System system)
         {
             if (system.Stations.FilterFacility(StationFacility.TraderEncoded).Count > 0)
             {
@@ -64,9 +64,9 @@ namespace OrcaBot.Helpers
         /// <returns>The facility.</returns>
         /// <param name="systems">Systems.</param>
         /// <param name="stationFacility">Station facility.</param>
-        public static IList<SharedTypes.System> FilterFacility(this IList<SharedTypes.System> systems, StationFacility stationFacility)
+        public static IList<Types.System> FilterFacility(this IList<Types.System> systems, StationFacility stationFacility)
         {
-            var returnList = new List<SharedTypes.System>();
+            var returnList = new List<Types.System>();
             foreach(var system in systems)
             {
                 if(system.Stations.FilterFacility(stationFacility).Count > 0)
@@ -76,7 +76,7 @@ namespace OrcaBot.Helpers
             }
             return returnList;
         }
-        public static float DistanceTo(this SharedTypes.System sys,Coordinate coordinate)
+        public static float DistanceTo(this Types.System sys,Coordinate coordinate)
         {
             var syscoordinate = sys.Coordinate;
             return syscoordinate.DistanceTo(coordinate);

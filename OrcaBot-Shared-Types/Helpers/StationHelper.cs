@@ -1,10 +1,10 @@
-﻿using OrcaBot.SharedTypes.Enums;
-using OrcaBot.SharedTypes;
+﻿using Orcabot.Types.Enums;
+using Orcabot.Types;
 
 using System;
 using System.Collections.Generic;
 
-namespace OrcaBot.Helpers
+namespace Orcabot.Helpers
 {
     public static class StationHelper
     {

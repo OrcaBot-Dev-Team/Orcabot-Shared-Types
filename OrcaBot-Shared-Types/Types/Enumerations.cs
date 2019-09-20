@@ -1,5 +1,5 @@
 ﻿using System;
-namespace OrcaBot.SharedTypes.Enums
+namespace Orcabot.Types.Enums
 {
     /// <summary>
     /// Gives the maximum Pad size at a facility. Although Values like "Small" are not used ingame, they might become relevant in the future.

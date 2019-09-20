@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
-using OrcaBot.SharedTypes.Enums;
-namespace OrcaBot.SharedTypes
+using Orcabot.Types.Enums;
+namespace Orcabot.Types
 {
     public class Station
     {
