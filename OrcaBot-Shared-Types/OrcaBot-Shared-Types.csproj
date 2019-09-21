@@ -1,8 +1,20 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>netcoreapp2.2</TargetFramework>
-    <RootNamespace>OrcaBot_Shared_Types</RootNamespace>
+    <RootNamespace>Orcabot</RootNamespace>
+    <Authors>OrcaBot-Dev-Team</Authors>
+    <Company />
+    <Product>OrcaBot</Product>
+    <Copyright></Copyright>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <RepositoryUrl>https://github.com/OrcaBot-Dev-Team/Orcabot-Shared-Types</RepositoryUrl>
+    <PackageTags>orcabot types</PackageTags>
+    <SignAssembly>false</SignAssembly>
+    <ApplicationIcon />
+    <OutputType>Library</OutputType>
+    <StartupObject />
+    <Description>A collection of Types used by the Orcabot and Orcabot tools</Description>
   </PropertyGroup>
 
   <ItemGroup>

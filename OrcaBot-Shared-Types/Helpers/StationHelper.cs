@@ -16,7 +16,7 @@ namespace Orcabot.Helpers
         /// <summary>
         /// Filter the specified stationList by Facility. Only Stations with the given Facility remain.
         /// </summary>
-        /// <returns>The filter.</returns>
+        /// <returns>Subset of the given Station List that have the given Facility</returns>
         /// <param name="stationList">Station list.</param>
         /// <param name="facility">Facility to filter after</param>
         public static IList<Station>FilterFacility(this IList<Station> stationList, StationFacility facility) 
@@ -32,14 +32,20 @@ namespace Orcabot.Helpers
             return returnList;
         }
 
-
+        /// <summary>
+        /// Returns wether or not a ship of certain padSize can land at this station
+        /// </summary>
+        /// <param name="station">The Station to check</param>
+        /// <param name="padSize">Check if station has landing pad</param>
+        /// <returns></returns>
         public static bool HasLandingPad(this Station station,PadSize padSize)
-        {   
+        {
+            var stationPad = station.GetPadSize();
             if(padSize == PadSize.Unknown)
             {
                 return false;
             }
-            return (padSize <= station.PadSize);
+            return (padSize <= stationPad);
         }
         public static IList<Station> FilterLandingPad(this IList<Station> stationList, PadSize padSize)
         {
@@ -53,5 +59,28 @@ namespace Orcabot.Helpers
             }
             return returnList;
         }
+        public static bool IsPlanetary(this Station s) {
+            return s.Type == StationType.SurfaceSettlement || s.Type == StationType.SurfaceStation;
+        }
+        public static PadSize GetPadSize(this Station s) {
+            if(
+                s.Type == StationType.AsteroidBase ||
+                s.Type == StationType.Coriolis ||
+                s.Type == StationType.MegaShip ||
+                s.Type == StationType.Ocellus ||
+                s.Type == StationType.Orbis ||
+                s.Type == StationType.SurfaceStation
+                ) {
+                return PadSize.Large;
+            }else if(
+                s.Type == StationType.Outpost
+                ) {
+                return PadSize.Medium;
+            }
+            else {
+                return PadSize.None;
+            }
+        }
+        
     }
 }
