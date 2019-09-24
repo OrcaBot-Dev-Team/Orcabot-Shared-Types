@@ -82,4 +82,96 @@ namespace Orcabot.Types.Enums
         SurfaceStation,
         SurfaceSettlement
     }
+    namespace Ranks
+    {
+        public enum Combat
+        {
+            Unknown = -1,
+            Harmless,
+            MostlyHarmless,
+            Novice,
+            Competent,
+            Expert,
+            Master,
+            Dangerous,
+            Deadly,
+            Elite
+        }
+        public enum Trade
+        {
+            Unknown = -1,
+            Penniless,
+            MostlyPenniless,
+            Peddler,
+            Dealer,
+            Merchant,
+            Broker,
+            Entrepreneur,
+            Tycoon,
+            Elite
+        }
+        public enum Explore
+        {
+            Unknown = -1,
+            Aimless,
+            MostlyAimless,
+            Scout,
+            Surveyor,
+            Trailblazer,
+            Pathfinder,
+            Ranger,
+            Pioneer,
+            Elite
+        }
+        public enum CQC
+        {
+            Unknown = -1,
+            Helpless,
+            MostlyHelpless,
+            Amateur,
+            SemiProfessional,
+            Professional,
+            Champion,
+            Hero,
+            Legend,
+            Elite
+        }
+        public enum Federation
+        {
+            Unknown = -1,
+            None,
+            Recruit,
+            Cadet,
+            Midshipman,
+            PettyOfficer,
+            ChiefPettyOfficer,
+            WarrantOfficer,
+            Ensign,
+            Lieutenant,
+            LieutenantCommander,
+            PostCommander,
+            RearAdmiral,
+            ViceAdmiral,
+            Admiral
+        }
+        public enum Empire
+        {
+            Unknown = -1,
+            None,
+            Outsider,
+            Serf,
+            Master,
+            Squire,
+            Knight,
+            Lord,
+            Baron,
+            Viscount,
+            Count,
+            Earl,
+            Marquis,
+            Duke,
+            Prince,
+            King
+        }
+    }
 }
