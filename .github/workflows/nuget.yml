@@ -14,5 +14,7 @@ jobs:
     - uses: actions/checkout@master
     - name: Setting up Nuget.exe
       uses: warrenbuckley/Setup-Nuget@v1
+    - name: Nuget Build
+      run: nuget pack *.csproj
     - name: Nuget Push
       run: nuget push *.nupkg
