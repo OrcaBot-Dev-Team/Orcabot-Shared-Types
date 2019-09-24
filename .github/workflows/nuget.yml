@@ -18,7 +18,7 @@ jobs:
     - name: Setting up Nuget.exe
       uses: warrenbuckley/Setup-Nuget@v1
     - name: Nuget Build
-      run: nuget pack OrcaBot-Shared-Types.csproj
+      run: nuget pack Orcabot-Shared-Types.csproj
 
     - name: Nuget Push
       run: nuget push *.nupkg
