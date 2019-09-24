@@ -1,5 +1,6 @@
 name: Publish NuGet
 
+# Trigger a publish to Nuget when a commit is pushed to master.
 on:
   push:
     branches:
@@ -11,10 +12,15 @@ jobs:
     runs-on: windows-latest
     
     steps:
+ 
+
     - uses: actions/checkout@master
     - name: Setting up Nuget.exe
       uses: warrenbuckley/Setup-Nuget@v1
     - name: Nuget Build
-      run: nuget pack *.csproj
+      run: nuget pack OrcaBot-Shared-Types.csproj
+
     - name: Nuget Push
       run: nuget push *.nupkg
+           # Change this to fit the Repository
+      
