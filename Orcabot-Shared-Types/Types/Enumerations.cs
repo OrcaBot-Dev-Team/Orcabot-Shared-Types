@@ -56,7 +56,8 @@ namespace Orcabot.Types.Enums
         PrisonColony,
         Repair,
         Rescue,
-        Damaged
+        Damaged,
+        Agriculture
     }
     public enum Security
     {
