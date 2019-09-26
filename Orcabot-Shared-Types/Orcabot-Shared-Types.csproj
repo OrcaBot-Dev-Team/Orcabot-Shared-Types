@@ -15,8 +15,8 @@
     <OutputType>Library</OutputType>
     <StartupObject />
     <Description>A collection of Types used by the Orcabot and Orcabot tools</Description>
-    <Version>1.0.3</Version>
-    <PackageReleaseNotes>Added Agriculture Economy</PackageReleaseNotes>
+    <Version>1.0.4</Version>
+    <PackageReleaseNotes>Added Missing Imperial Rank</PackageReleaseNotes>
   </PropertyGroup>
 
   <ItemGroup>

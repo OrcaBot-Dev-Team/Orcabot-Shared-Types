@@ -17,6 +17,7 @@ namespace Orcabot.Types
         public Trade TradeRank { get; set; }
         public Explore ExplorationRank { get; set; }
         public Federation FederationRank { get; set; }
+        public Empire ImperialRank { get; set; }
         #endregion
         public Types.System LastKnownLocation { get; set; }
     }
