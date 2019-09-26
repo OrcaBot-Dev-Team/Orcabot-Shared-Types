@@ -81,6 +81,8 @@ namespace Orcabot.Helpers
                 return PadSize.None;
             }
         }
-        
+        public static bool HasMatTrader(this Station s) {
+            return s.HasFacility(StationFacility.TraderRaw) || s.HasFacility(StationFacility.TraderManufactured) || s.HasFacility(StationFacility.TraderEncoded);
+        }
     }
 }

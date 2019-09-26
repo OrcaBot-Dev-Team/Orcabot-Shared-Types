@@ -4,6 +4,8 @@ using Orcabot.Types;
 
 using System.Collections.Generic;
 using System;
+using Sys = Orcabot.Types.System;
+using System.Linq;
 
 namespace Orcabot.Helpers
 {
@@ -14,7 +16,7 @@ namespace Orcabot.Helpers
         /// </summary>
         /// <returns>A new List of Systems with Material Traders</returns>
         /// <param name="systems">List of Systems</param>
-        public static IList<Types.System> FilterMaterialTrader(this IList<Types.System> systems )
+        public static IList<Sys> FilterMaterialTrader(this IList<Sys> systems )
         {
 
             var returnList = new List<Types.System>();
@@ -27,9 +29,80 @@ namespace Orcabot.Helpers
             }
             return returnList;
         }
+        public static Dictionary<string,Sys> FilterMaterialTraders(this Dictionary<string,Sys> dict, bool keepTraderStationsOnly) {
+            var returnDict = new Dictionary<string, Sys>();
+            foreach (var entry in dict) {
+                if (entry.Value.HasMatTrader()) {
+                    var system = entry.Value;
+                    if (keepTraderStationsOnly) {
+                        foreach (var station in system.Stations) {
+                            if (!station.HasFacility(StationFacility.TraderEncoded) && !station.HasFacility(StationFacility.TraderManufactured) && !station.HasFacility(StationFacility.TraderRaw)) {
+                                system.Stations.Remove(station);
+                            }
+                        }
+                    }
 
+                    returnDict.Add(entry.Key, system);
+                }
+            }
+            return returnDict;
+        }
+        public static Sys RemoveIrrelevantStations (this Sys sys) {
+            List<Station> stations = sys.Stations.OrderBy(s => s.Distance).ToList();
+            Station L = null, M = null, Planet = null, MatTrader = null;
+            foreach(var station in stations) {
+                if (station.HasMatTrader()) {
+                    MatTrader = station;
+                }
+                if (station.IsPlanetary()) {
+                    if(Planet == null) {
+                        Planet = station;
+                    }
+                }
+                else if(station.GetPadSize() == PadSize.Large) {
+                    if(L == null) {
+                        L = station;
+                    }
+                }
+                else if(station.GetPadSize() == PadSize.Medium){
+                    if(M == null) {
+                        M = station;
+                    }
+                }
+                if(L != null && M != null && Planet != null) {
+                    if (!sys.HasMatTrader())
+                        break;
+                    else if (MatTrader != null)
+                        break; 
+                }
+            }
+            //It's the same station, so one reference can be removed
+            if(L == MatTrader) {
+                MatTrader = null;
+            }
+            //L M and Planet now have the closest Stations
+            if(L.Distance < M.Distance) {
+                M = null; //Medium Station is irrelevant in this case due to the Large being closer.
+            }
+            if(L.Distance < Planet.Distance) {
+                Planet = null; //Planetary is irrelevant in this case due to the large being closer.
+            }
+            List<Station> filteredStations = new List<Station>();
+            var arr = new Station[]{
+                L,M,Planet,MatTrader
+            };
+            foreach(var s in arr) {
+                if(s != null) {
+                    filteredStations.Add(s);
+                }
+            }
+            sys.Stations = filteredStations;
+            return sys;
+        }
 
-        public static bool HasMatTrader(this Types.System system)
+ 
+
+        public static bool HasMatTrader(this Sys system)
         {
             return (
                     system.Stations.FilterFacility(StationFacility.TraderEncoded).Count > 0 ||
