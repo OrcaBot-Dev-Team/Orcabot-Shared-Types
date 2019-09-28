@@ -81,8 +81,41 @@ namespace Orcabot.Helpers
                 return PadSize.None;
             }
         }
+
         public static bool HasMatTrader(this Station s) {
             return s.HasFacility(StationFacility.TraderRaw) || s.HasFacility(StationFacility.TraderManufactured) || s.HasFacility(StationFacility.TraderEncoded);
+        }
+
+        public static TraderType GetMatTrader(this Station s)
+        {
+            foreach (StationFacility fac in s.StationFacilities)
+            {
+                if (fac > StationFacility.TraderUnknown)
+                {
+                    return fac.ToTraderType();
+                }
+            }
+            return TraderType.NoTrader;
+        }
+
+        public static RelevantStationType GetRelevantStationType(this Station s)
+        {
+            if (s.Type < StationType.SurfaceStation)
+            {
+                return RelevantStationType.Unlandable;
+            }
+            else if (s.Type < StationType.Outpost)
+            {
+                return RelevantStationType.Planetary;
+            }
+            else if (s.Type < StationType.MegaShip)
+            {
+                return RelevantStationType.OrbitalMedium;
+            }
+            else
+            {
+                return RelevantStationType.OrbitalLarge;
+            }
         }
     }
 }

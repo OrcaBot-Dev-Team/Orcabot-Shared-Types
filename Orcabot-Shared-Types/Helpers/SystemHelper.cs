@@ -4,8 +4,8 @@ using Orcabot.Types;
 
 using System.Collections.Generic;
 using System;
-using Sys = Orcabot.Types.System;
 using System.Linq;
+using System.Numerics;
 
 namespace Orcabot.Helpers
 {
@@ -16,27 +16,27 @@ namespace Orcabot.Helpers
         /// </summary>
         /// <returns>A new List of Systems with Material Traders</returns>
         /// <param name="systems">List of Systems</param>
-        public static IList<Sys> FilterMaterialTrader(this IList<Sys> systems )
+        public static IList<StarSystem> FilterMaterialTrader(this IList<StarSystem> systems )
         {
 
-            var returnList = new List<Types.System>();
+            var returnList = new List<Types.StarSystem>();
             foreach(var system in systems)
             {
-                if(system.HasMatTrader())
+                if(system.HasMaterialTrader)
                 {
                     returnList.Add(system);
                 }
             }
             return returnList;
         }
-        public static Dictionary<string,Sys> FilterMaterialTraders(this Dictionary<string,Sys> dict, bool keepTraderStationsOnly) {
-            var returnDict = new Dictionary<string, Sys>();
+        public static Dictionary<string,StarSystem> FilterMaterialTraders(this Dictionary<string,StarSystem> dict, bool keepTraderStationsOnly) {
+            var returnDict = new Dictionary<string, StarSystem>();
             foreach (var entry in dict) {
-                if (entry.Value.HasMatTrader()) {
+                if (entry.Value.HasMaterialTrader) {
                     var system = entry.Value;
                     if (keepTraderStationsOnly) {
                         foreach (var station in system.Stations) {
-                            if (!station.HasFacility(StationFacility.TraderEncoded) && !station.HasFacility(StationFacility.TraderManufactured) && !station.HasFacility(StationFacility.TraderRaw)) {
+                            if (!station.HasMaterialTrader) {
                                 system.Stations.Remove(station);
                             }
                         }
@@ -47,62 +47,98 @@ namespace Orcabot.Helpers
             }
             return returnDict;
         }
-        public static Sys RemoveIrrelevantStations (this Sys sys) {
-            List<Station> stations = sys.Stations.OrderBy(s => s.Distance).ToList();
-            Station L = null, M = null, Planet = null, MatTrader = null;
-            foreach(var station in stations) {
-                if (station.HasMatTrader()) {
-                    MatTrader = station;
-                }
-                if (station.IsPlanetary()) {
-                    if(Planet == null) {
-                        Planet = station;
-                    }
-                }
-                else if(station.GetPadSize() == PadSize.Large) {
-                    if(L == null) {
-                        L = station;
-                    }
-                }
-                else if(station.GetPadSize() == PadSize.Medium){
-                    if(M == null) {
-                        M = station;
-                    }
-                }
-                if(L != null && M != null && Planet != null) {
-                    if (!sys.HasMatTrader())
-                        break;
-                    else if (MatTrader != null)
-                        break; 
-                }
-            }
-            //It's the same station, so one reference can be removed
-            if(L == MatTrader) {
-                MatTrader = null;
-            }
-            //L M and Planet now have the closest Stations
-            if(L.Distance < M.Distance) {
-                M = null; //Medium Station is irrelevant in this case due to the Large being closer.
-            }
-            if(L.Distance < Planet.Distance) {
-                Planet = null; //Planetary is irrelevant in this case due to the large being closer.
-            }
-            List<Station> filteredStations = new List<Station>();
-            var arr = new Station[]{
-                L,M,Planet,MatTrader
-            };
-            foreach(var s in arr) {
-                if(s != null) {
-                    filteredStations.Add(s);
-                }
-            }
-            sys.Stations = filteredStations;
-            return sys;
+        public static void RemoveIrrelevantStations (this StarSystem sys)
+        {
+            sys.Stations = sys.FilterRelevantStations();
         }
 
- 
+        public static List<Station> FilterRelevantStations(this StarSystem sys)
+        {
+            sys.GetRelevantStations(out Station L, out Station M, out Station P, out Station T);
+            List<Station> filteredStations = new List<Station>();
 
-        public static bool HasMatTrader(this Sys system)
+            filteredStations.checkNullAdd(L);
+            filteredStations.checkNullAdd(M);
+            filteredStations.checkNullAdd(P);
+            filteredStations.checkNullAdd(T);
+            return filteredStations;
+        }
+
+
+        private static void checkNullAdd<T>(this List<T> list, T item) where T : class
+        {
+            if (item != null)
+            {
+                list.Add(item);
+            }
+        }
+
+        public static void GetRelevantStations(this StarSystem sys, out Station bestOrbitalLarge, out Station bestOrbitalMedium, out Station bestPlanetary, out Station materialTrader)
+        {
+            IOrderedEnumerable<Station> stations = sys.Stations.OrderBy(s => s.Distance);
+            bestOrbitalLarge = null;
+            bestOrbitalMedium = null;
+            bestPlanetary = null;
+            materialTrader = null;
+            foreach (var station in stations)
+            {
+                if (station.HasMaterialTrader)
+                {
+                    materialTrader = station;
+                }
+                if (station.RelevantType == RelevantStationType.Planetary)
+                {
+                    if (bestPlanetary == null)
+                    {
+                        bestPlanetary = station;
+                    }
+                }
+                else if (station.RelevantType == RelevantStationType.OrbitalLarge)
+                {
+                    if (bestOrbitalLarge == null)
+                    {
+                        bestOrbitalLarge = station;
+                    }
+                }
+                else if (station.RelevantType == RelevantStationType.OrbitalMedium)
+                {
+                    if (bestOrbitalMedium == null)
+                    {
+                        bestOrbitalMedium = station;
+                    }
+                }
+                if (bestOrbitalLarge != null && bestOrbitalMedium != null && bestPlanetary != null && materialTrader != null)
+                {
+                    // sys.HasMatTrader() means traversing all stations 4! times! More efficient to just continue this traversal until materialtrader has been found
+                    break;
+                    //if (!sys.HasMatTrader())
+                    //    break;
+                    //else if (materialTrader != null)
+                    //    break;
+                }
+            }
+            // It's the same station, so one reference can be removed
+            // We will keep materialTrader for this method, and filtering when calling. Don't want to delete the information that this system indeed has a material trader!
+
+            //if (bestOrbitalLarge == materialTrader)
+            //{
+            //    materialTrader = null;
+            //}
+
+            //L M and Planet now have the closest Stations
+            if ((bestOrbitalLarge != null) && (bestOrbitalMedium != null) && bestOrbitalLarge.Distance < bestOrbitalMedium.Distance)
+            {
+                bestOrbitalMedium = null; //Medium Station is irrelevant in this case due to the Large being closer.
+            }
+            if ((bestOrbitalLarge != null) && (bestPlanetary != null) && bestOrbitalLarge.Distance < bestPlanetary.Distance)
+            {
+                bestPlanetary = null; //Planetary is irrelevant in this case due to the large being closer.
+            }
+        }
+
+
+        [Obsolete]
+        public static bool HasMatTrader(this StarSystem system)
         {
             return (
                     system.Stations.FilterFacility(StationFacility.TraderEncoded).Count > 0 ||
@@ -111,7 +147,9 @@ namespace Orcabot.Helpers
                     system.Stations.FilterFacility(StationFacility.TraderUnknown).Count > 0
                     );
         }
-        public static StationFacility GetMatTraderType(this Types.System system)
+
+        [Obsolete]
+        public static StationFacility GetMatTraderType(this Types.StarSystem system)
         {
             if (system.Stations.FilterFacility(StationFacility.TraderEncoded).Count > 0)
             {
@@ -137,9 +175,9 @@ namespace Orcabot.Helpers
         /// <returns>The facility.</returns>
         /// <param name="systems">Systems.</param>
         /// <param name="stationFacility">Station facility.</param>
-        public static IList<Types.System> FilterFacility(this IList<Types.System> systems, StationFacility stationFacility)
+        public static IList<Types.StarSystem> FilterFacility(this IList<Types.StarSystem> systems, StationFacility stationFacility)
         {
-            var returnList = new List<Types.System>();
+            var returnList = new List<Types.StarSystem>();
             foreach(var system in systems)
             {
                 if(system.Stations.FilterFacility(stationFacility).Count > 0)
@@ -149,11 +187,12 @@ namespace Orcabot.Helpers
             }
             return returnList;
         }
-        public static float DistanceTo(this Types.System sys,Coordinate coordinate)
+        public static float DistanceTo(this Types.StarSystem sys, Vector3 coordinate)
         {
-            var syscoordinate = sys.Coordinate;
-            return syscoordinate.DistanceTo(coordinate);
+            return Vector3.Distance(sys.Coordinate, coordinate);
         }
+
+        [Obsolete]
         public static float DistanceTo(this Coordinate c1,Coordinate c2)
         {
             var X = c1.X - c2.X;

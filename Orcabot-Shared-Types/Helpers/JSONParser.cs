@@ -4,12 +4,12 @@ using System.Text;
 using Orcabot.Types;
 using Newtonsoft.Json;
 using System.Threading.Tasks;
-using Sys = Orcabot.Types.System;
+using Sys = Orcabot.Types.StarSystem;
 using System.IO;
 
 namespace Orcabot.Helpers
 {
-    static class JSONParser
+    public static class JSONParser
     {
         /// <summary>
         /// Returns a Dictionary of Systems if Parsing is successful. Returns null upon failure.
