@@ -28,7 +28,7 @@ namespace Orcabot.Types
         /// <summary>
         /// List of all Facilities the station offers
         /// </summary>
-        public HashSet<StationFacility> StationFacilities { get; set; } = new HashSet<StationFacility>();
+        public HashSet<StationFacility> Facilities { get; set; } = new HashSet<StationFacility>();
 
         /// <summary>
         /// Economy dictating the stations mission board and market
@@ -43,6 +43,10 @@ namespace Orcabot.Types
         #endregion
         #region Cached Properties
 
+        /// <summary>
+        /// The system this station is found in
+        /// </summary>
+        public StarSystem CurrentSystem { get; internal set; }
         /// <summary>
         /// The largest pad available at a station.
         /// </summary>
@@ -67,27 +71,91 @@ namespace Orcabot.Types
         [JsonIgnore]
         public RelevantStationType RelevantType { get; private set; }
 
+        /// <summary>
+        /// True, if the station is located on a planets surface (therefor requiring horizons)
+        /// </summary>
+        [JsonIgnore]
+        public bool IsPlanetary => Type == StationType.SurfaceSettlement || Type == StationType.SurfaceStation;
+
+        /// <summary>
+        /// Method automatically called after deserializing
+        /// </summary>
         [OnDeserialized]
         internal void SetupCachedProperties(StreamingContext context)
         {
-            RelevantType = this.GetRelevantStationType();
+            RelevantType = Type.ToRelevantStationType();
             LargestPadAvailable = RelevantType.ToPadSize();
-            MaterialTrader = this.GetMatTrader();
+            MaterialTrader = getMatTrader();
+        }
+
+        private TraderType getMatTrader()
+        {
+            foreach (StationFacility fac in Facilities)
+            {
+                if (fac > StationFacility.TraderUnknown)
+                {
+                    return fac.ToTraderType();
+                }
+            }
+            return TraderType.NoTrader;
+        }
+
+        #endregion
+        #region Methods
+
+        /// <summary>
+        /// Check for a ships ability to land on this station
+        /// </summary>
+        /// <param name="shipSize">The minimum landing pad size the ship requires</param>
+        /// <returns>True, if the specified ship can land on the station</returns>
+        public bool CanLand(PadSize shipSize)
+        {
+            return LargestPadAvailable >= shipSize;
         }
 
         public override string ToString()
         {
-            return $"{Name} ({Type}), Services: {string.Join(", ", StationFacilities)}";
+            return $"{Name} ({Type}), Services: {string.Join(", ", Facilities)}";
         }
 
         public string ToString(IStationEmojiProvider emojiProvider)
         {
-            return $"{emojiProvider} {Name}, Services: {string.Join(", ", StationFacilities)}";
+            return $"{emojiProvider.GetStationEmoji(Type)} {Name}, Services: {string.Join(", ", Facilities)}";
+        }
+
+        /// <summary>
+        /// Check wether a station has a desired list of facilities
+        /// </summary>
+        /// <param name="facilities">Facilities to check for</param>
+        /// <returns>True, if all facilities are present</returns>
+        public bool HasFacilities(params StationFacility[] facilities)
+        {
+            foreach (StationFacility facility in facilities)
+            {
+                if (!Facilities.Contains(facility))
+                {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        /// <summary>
+        /// Check wether a station has a facility
+        /// </summary>
+        /// <param name="facility">Facility to check for</param>
+        /// <returns>True, if the facility is present</returns>
+        public bool HasFacility(StationFacility facility)
+        {
+            return Facilities.Contains(facility);
         }
 
         #endregion
     }
 
+    /// <summary>
+    /// This class can provide station emoji strings for station types
+    /// </summary>
     public interface IStationEmojiProvider
     {
         string GetStationEmoji(StationType type);

@@ -5,6 +5,7 @@ using Orcabot.Types.Enums;
 using Newtonsoft.Json;
 using Orcabot.Helpers;
 using System.Runtime.Serialization;
+using System.Linq;
 
 namespace Orcabot.Types
 {
@@ -84,24 +85,127 @@ namespace Orcabot.Types
         [OnDeserialized]
         internal void SetupCachedProperties(StreamingContext context)
         {
-            this.GetRelevantStations(out Station L, out Station M, out Station P, out Station T);
-            Station_BestOrbitalLarge = L;
-            Station_BestOrbitalMedium = M;
-            Station_BestPlanetary = P;
-            Station_MaterialTrader = T;
+            setupStations();
+        }
+
+        private void setupStations()
+        {
+            IOrderedEnumerable<Station> stations = Stations.OrderBy(s => s.Distance);
+
+            Station_BestOrbitalLarge = null;
+            Station_BestOrbitalMedium = null;
+            Station_BestPlanetary = null;
+            Station_MaterialTrader = null;
+            foreach (var station in stations)
+            {
+                station.CurrentSystem = this;
+                if (station.HasMaterialTrader)
+                {
+                    Station_MaterialTrader = station;
+                }
+                if (Station_BestPlanetary == null && station.RelevantType == RelevantStationType.Planetary)
+                {
+                    Station_BestPlanetary = station;
+                }
+                else if (Station_BestOrbitalLarge == null && station.RelevantType == RelevantStationType.OrbitalLarge)
+                {
+                    Station_BestOrbitalLarge = station;
+                }
+                else if (Station_BestOrbitalMedium == null && station.RelevantType == RelevantStationType.OrbitalMedium)
+                {
+                    Station_BestOrbitalMedium = station;
+                }
+            }
         }
 
         #endregion
         #region Methods
 
-        public float GetDistanceSquared(Vector3 position)
+        /// <summary>
+        /// Calculates the distance of this system to <paramref name="position"/>
+        /// </summary>
+        public float GetDistanceTo(Vector3 position)
+        {
+            return Vector3.Distance(Coordinate, position);
+        }
+
+        /// <summary>
+        /// Calculates the squared distance of this system to <paramref name="position"/>
+        /// </summary>
+        public float GetDistanceSquaredTo(Vector3 position)
         {
             return Vector3.DistanceSquared(Coordinate, position);
         }
 
         public override string ToString()
         {
-            return base.ToString();
+            return $"{Name}, Stations: {string.Join(", ", GetBestStationsDistChecked(false))}";
+        }
+
+        /// <summary>
+        /// Returns a list of the best stations, with filtering on the distance.
+        /// </summary>
+        /// <param name="hideMaterialTraderIfBestOrbitalLarge">If true and the best orbital large is the material trader station, the material trader station is not provided again</param>
+        public IReadOnlyList<Station> GetBestStationsDistChecked(bool hideMaterialTraderIfBestOrbitalLarge)
+        {
+            List<Station> result = new List<Station>();
+            if (Station_BestOrbitalLarge != null)
+            {
+                result.Add(Station_BestOrbitalLarge);
+            }
+
+            compareAddStation(result, Station_BestOrbitalLarge, Station_BestOrbitalMedium);
+            compareAddStation(result, Station_BestOrbitalLarge, Station_BestPlanetary);
+
+            if (Station_MaterialTrader != null)
+            {
+                if (!hideMaterialTraderIfBestOrbitalLarge || Station_MaterialTrader == Station_BestOrbitalLarge)
+                {
+                    result.Add(Station_MaterialTrader);
+                }
+            }
+
+            return result.AsReadOnly();
+        }
+
+        /// <summary>
+        /// Removes all irrelevant or doubled up stations from the stations list.
+        /// </summary>
+        public void RemoveIrrelevantStations()
+        {
+            Stations.Clear();
+            Stations.AddRange(GetBestStationsDistChecked(true));
+        }
+
+        private void compareAddStation(List<Station> list, Station first, Station optional)
+        {
+            if (optional != null)
+            {
+                if (first != null)
+                {
+                    if (optional.Distance < first.Distance)
+                    {
+                        list.Add(optional);
+                    }
+                }
+                else
+                {
+                    list.Add(optional);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Filter the stations in this system
+        /// </summary>
+        /// <param name="type">If not null, will only provide stations of the desired type</param>
+        /// <param name="facility">If not null, will only provide stations with the desired facility available</param>
+        /// <param name="minPadSize">If not null, will only provide stations with the minimum landing pad size present</param>
+        /// <param name="result">New list with only the filtered stations</param>
+        /// <returns>True, if atleast one station matching the filters was found</returns>
+        public bool FilterStations(StationSearchFilter filter, out List<Station> result)
+        {
+            return Stations.Filter(filter, out result);
         }
 
         #endregion

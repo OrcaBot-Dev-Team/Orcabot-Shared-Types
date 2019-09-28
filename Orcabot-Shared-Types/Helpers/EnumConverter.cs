@@ -34,5 +34,45 @@ namespace Orcabot.Helpers
                     return PadSize.Unknown;
             }
         }
+
+        public static PadSize ToPadSize(this StationType type)
+        {
+            if (type < StationType.SurfaceStation)
+            {
+                return PadSize.None;
+            }
+            else if (type < StationType.Outpost)
+            {
+                return PadSize.Large;
+            }
+            else if (type < StationType.MegaShip)
+            {
+                return PadSize.Medium;
+            }
+            else
+            {
+                return PadSize.Large;
+            }
+        }
+
+        public static RelevantStationType ToRelevantStationType(this StationType type)
+        {
+            if (type < StationType.SurfaceStation)
+            {
+                return RelevantStationType.Unlandable;
+            }
+            else if (type < StationType.Outpost)
+            {
+                return RelevantStationType.Planetary;
+            }
+            else if (type < StationType.MegaShip)
+            {
+                return RelevantStationType.OrbitalMedium;
+            }
+            else
+            {
+                return RelevantStationType.OrbitalLarge;
+            }
+        }
     }
 }

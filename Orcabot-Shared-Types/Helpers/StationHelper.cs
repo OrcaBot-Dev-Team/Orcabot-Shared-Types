@@ -3,14 +3,16 @@ using Orcabot.Types;
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Orcabot.Helpers
 {
     public static class StationHelper
     {
+        [Obsolete]
         public static bool HasFacility(this Station station, StationFacility facility)
         {
-            return station.StationFacilities.Contains(facility);
+            return station.Facilities.Contains(facility);
         }
 
         /// <summary>
@@ -24,7 +26,7 @@ namespace Orcabot.Helpers
             IList<Station> returnList = new List<Station>();
             foreach(var element in stationList)
             {
-                if (element.HasFacility(facility))
+                if (element.Facilities.Contains(facility))
                 {
                     returnList.Add(element);
                 }
@@ -38,30 +40,37 @@ namespace Orcabot.Helpers
         /// <param name="station">The Station to check</param>
         /// <param name="padSize">Check if station has landing pad</param>
         /// <returns></returns>
+        [Obsolete]
         public static bool HasLandingPad(this Station station,PadSize padSize)
         {
-            var stationPad = station.GetPadSize();
+            var stationPad = station.LargestPadAvailable;
             if(padSize == PadSize.Unknown)
             {
                 return false;
             }
             return (padSize <= stationPad);
         }
+
+
         public static IList<Station> FilterLandingPad(this IList<Station> stationList, PadSize padSize)
         {
             var returnList = new List<Station>();
             foreach(var element in stationList)
             {
-                if (element.HasLandingPad(padSize))
+                if (element.CanLand(padSize))
                 {
                     returnList.Add(element);
                 }
             }
             return returnList;
         }
+
+        [Obsolete]
         public static bool IsPlanetary(this Station s) {
             return s.Type == StationType.SurfaceSettlement || s.Type == StationType.SurfaceStation;
         }
+
+        [Obsolete]
         public static PadSize GetPadSize(this Station s) {
             if(
                 s.Type == StationType.AsteroidBase ||
@@ -82,13 +91,15 @@ namespace Orcabot.Helpers
             }
         }
 
+        [Obsolete]
         public static bool HasMatTrader(this Station s) {
             return s.HasFacility(StationFacility.TraderRaw) || s.HasFacility(StationFacility.TraderManufactured) || s.HasFacility(StationFacility.TraderEncoded);
         }
 
+        [Obsolete]
         public static TraderType GetMatTrader(this Station s)
         {
-            foreach (StationFacility fac in s.StationFacilities)
+            foreach (StationFacility fac in s.Facilities)
             {
                 if (fac > StationFacility.TraderUnknown)
                 {
@@ -98,6 +109,7 @@ namespace Orcabot.Helpers
             return TraderType.NoTrader;
         }
 
+        [Obsolete]
         public static RelevantStationType GetRelevantStationType(this Station s)
         {
             if (s.Type < StationType.SurfaceStation)
@@ -116,6 +128,32 @@ namespace Orcabot.Helpers
             {
                 return RelevantStationType.OrbitalLarge;
             }
+        }
+
+        /// <summary>
+        /// Filter a list of stations with parameters
+        /// </summary>
+        /// <param name="stations">List of stations to filter through</param>
+        /// <param name="filter">Filter configuration</param>
+        /// <returns>True, if atleast one station matching the filters was found</returns>
+        public static bool Filter(this IEnumerable<Station> stations, StationSearchFilter filter, out List<Station> result)
+        {
+            result = new List<Station>(stations);
+            List<Station> remove = new List<Station>();
+            if (filter.Type != null)
+            {
+                remove.AddRange(result.Where(station => station.Type != filter.Type.Value));
+            }
+            if (filter.Facility != null)
+            {
+                remove.AddRange(result.Where(station => !station.HasFacility(filter.Facility.Value)));
+            }
+            if (filter.MinPadSize != null)
+            {
+                remove.AddRange(result.Where(station => !station.CanLand(filter.MinPadSize.Value)));
+            }
+            result.RemoveRange(remove);
+            return result.Count > 0;
         }
     }
 }

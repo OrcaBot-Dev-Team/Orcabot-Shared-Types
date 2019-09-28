@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
 using System.Text;
+using Orcabot.Helpers;
 
 namespace Orcabot.Types
 {
@@ -13,6 +14,9 @@ namespace Orcabot.Types
         private readonly Dictionary<Vector3, SystemVoxel> voxels = new Dictionary<Vector3, SystemVoxel>();
         private readonly Dictionary<TraderType, HashSet<StarSystem>> materialTraders = new Dictionary<TraderType, HashSet<StarSystem>>();
 
+        /// <summary>
+        /// Count of all loaded systems
+        /// </summary>
         public int SystemCount => systems.Count;
         public int VoxelCount => voxels.Count;
         public int Tradercount
@@ -64,14 +68,14 @@ namespace Orcabot.Types
         }
 
 
-        public IReadOnlyList<DistanceWrapper<StarSystem>> GetSortedSystemsNear(Vector3 position, int maxDistance)
+        public IReadOnlyList<DistanceWrapper<StarSystem>> GetSortedSystemsNear(Vector3 position, int maxDistance = 100, SystemSearchFilter? filter = null)
         {
-            IReadOnlyList<StarSystem> systemsNear = GetSystemsNear(position, maxDistance);
+            IReadOnlyList<StarSystem> systemsNear = GetSystemsNear(position, maxDistance, filter);
             DistanceSortedList<StarSystem> sortedSystems = systemsNear.GetDistanceSortedList(position);
-            return sortedSystems.List;
+            return sortedSystems.Sorted;
         }
 
-        public IReadOnlyList<StarSystem> GetSystemsNear(Vector3 position, int maxDistance)
+        public List<StarSystem> GetSystemsNear(Vector3 position, int maxDistance = 100, SystemSearchFilter? filter = null)
         {
             IReadOnlyList<DistanceWrapper<SystemVoxel>> orderedVoxels = GetVoxelsSorted(position);
 
@@ -85,7 +89,12 @@ namespace Orcabot.Types
                     systemsNear.AddRange(voxelWrapper.Target.Systems);
                 }
             }
-            return systemsNear.AsReadOnly();
+            if (filter != null)
+            {
+                systemsNear.Filter(filter.Value, out List<StarSystem> filtered);
+                return filtered;
+            }
+            return systemsNear;
         }
 
         public bool TryGetSystem(string systemName, out StarSystem system)
@@ -96,7 +105,7 @@ namespace Orcabot.Types
         private IReadOnlyList<DistanceWrapper<SystemVoxel>> GetVoxelsSorted(Vector3 position)
         {
             DistanceSortedList<SystemVoxel> result = voxels.Values.GetDistanceSortedList(position);
-            return result.List;
+            return result.Sorted;
         }
 
         public bool TryGetMaterialTradersOrderedByDistance(TraderType type, Vector3 position, out IReadOnlyList<DistanceWrapper<StarSystem>> result)
@@ -104,7 +113,7 @@ namespace Orcabot.Types
             if (materialTraders.TryGetValue(type, out HashSet<StarSystem> systems))
             {
                 DistanceSortedList<StarSystem> list = systems.GetDistanceSortedList(position);
-                result = list.List;
+                result = list.Sorted;
                 return true;
             }
             result = null;
@@ -169,7 +178,7 @@ namespace Orcabot.Types
                 if (MaterialTraders.TryGetValue(type, out HashSet<StarSystem> systems))
                 {
                     DistanceSortedList<StarSystem> list = systems.GetDistanceSortedList(position);
-                    result = list.List;
+                    result = list.Sorted;
                     return true;
                 }
                 result = null;
@@ -181,7 +190,7 @@ namespace Orcabot.Types
                 return MaterialTraders.ContainsKey(type);
             }
 
-            public float GetDistanceSquared(Vector3 position)
+            public float GetDistanceSquaredTo(Vector3 position)
             {
                 return Vector3.DistanceSquared((Vector3)Center, position);
             }
@@ -196,5 +205,20 @@ namespace Orcabot.Types
                 return lightseconds / LIGHTSECONDSPERLIGHTYEAR;
             }
         }
+    }
+
+    public struct SystemSearchFilter
+    {
+        public TraderType? TraderType;
+        public string PermitName;
+        public bool? PermitLocked;
+        public SystemSecurity? Security;
+    }
+
+    public struct StationSearchFilter
+    {
+        public StationFacility? Facility;
+        public StationType? Type;
+        public PadSize? MinPadSize;
     }
 }

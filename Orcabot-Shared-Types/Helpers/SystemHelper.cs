@@ -16,126 +16,25 @@ namespace Orcabot.Helpers
         /// </summary>
         /// <returns>A new List of Systems with Material Traders</returns>
         /// <param name="systems">List of Systems</param>
-        public static IList<StarSystem> FilterMaterialTrader(this IList<StarSystem> systems )
+        public static IList<StarSystem> FilterMaterialTrader(this IList<StarSystem> systems)
         {
 
             var returnList = new List<Types.StarSystem>();
-            foreach(var system in systems)
+            foreach (var system in systems)
             {
-                if(system.HasMaterialTrader)
+                if (system.HasMaterialTrader)
                 {
                     returnList.Add(system);
                 }
             }
             return returnList;
         }
-        public static Dictionary<string,StarSystem> FilterMaterialTraders(this Dictionary<string,StarSystem> dict, bool keepTraderStationsOnly) {
-            var returnDict = new Dictionary<string, StarSystem>();
-            foreach (var entry in dict) {
-                if (entry.Value.HasMaterialTrader) {
-                    var system = entry.Value;
-                    if (keepTraderStationsOnly) {
-                        foreach (var station in system.Stations) {
-                            if (!station.HasMaterialTrader) {
-                                system.Stations.Remove(station);
-                            }
-                        }
-                    }
 
-                    returnDict.Add(entry.Key, system);
-                }
-            }
-            return returnDict;
-        }
-        public static void RemoveIrrelevantStations (this StarSystem sys)
+
+        public static Dictionary<string, StarSystem> FilterMaterialTraders(this Dictionary<string, StarSystem> dict)
         {
-            sys.Stations = sys.FilterRelevantStations();
+            return new Dictionary<string, StarSystem>(dict.Where(pair => { return pair.Value.HasMaterialTrader; }));
         }
-
-        public static List<Station> FilterRelevantStations(this StarSystem sys)
-        {
-            sys.GetRelevantStations(out Station L, out Station M, out Station P, out Station T);
-            List<Station> filteredStations = new List<Station>();
-
-            filteredStations.checkNullAdd(L);
-            filteredStations.checkNullAdd(M);
-            filteredStations.checkNullAdd(P);
-            filteredStations.checkNullAdd(T);
-            return filteredStations;
-        }
-
-
-        private static void checkNullAdd<T>(this List<T> list, T item) where T : class
-        {
-            if (item != null)
-            {
-                list.Add(item);
-            }
-        }
-
-        public static void GetRelevantStations(this StarSystem sys, out Station bestOrbitalLarge, out Station bestOrbitalMedium, out Station bestPlanetary, out Station materialTrader)
-        {
-            IOrderedEnumerable<Station> stations = sys.Stations.OrderBy(s => s.Distance);
-            bestOrbitalLarge = null;
-            bestOrbitalMedium = null;
-            bestPlanetary = null;
-            materialTrader = null;
-            foreach (var station in stations)
-            {
-                if (station.HasMaterialTrader)
-                {
-                    materialTrader = station;
-                }
-                if (station.RelevantType == RelevantStationType.Planetary)
-                {
-                    if (bestPlanetary == null)
-                    {
-                        bestPlanetary = station;
-                    }
-                }
-                else if (station.RelevantType == RelevantStationType.OrbitalLarge)
-                {
-                    if (bestOrbitalLarge == null)
-                    {
-                        bestOrbitalLarge = station;
-                    }
-                }
-                else if (station.RelevantType == RelevantStationType.OrbitalMedium)
-                {
-                    if (bestOrbitalMedium == null)
-                    {
-                        bestOrbitalMedium = station;
-                    }
-                }
-                if (bestOrbitalLarge != null && bestOrbitalMedium != null && bestPlanetary != null && materialTrader != null)
-                {
-                    // sys.HasMatTrader() means traversing all stations 4! times! More efficient to just continue this traversal until materialtrader has been found
-                    break;
-                    //if (!sys.HasMatTrader())
-                    //    break;
-                    //else if (materialTrader != null)
-                    //    break;
-                }
-            }
-            // It's the same station, so one reference can be removed
-            // We will keep materialTrader for this method, and filtering when calling. Don't want to delete the information that this system indeed has a material trader!
-
-            //if (bestOrbitalLarge == materialTrader)
-            //{
-            //    materialTrader = null;
-            //}
-
-            //L M and Planet now have the closest Stations
-            if ((bestOrbitalLarge != null) && (bestOrbitalMedium != null) && bestOrbitalLarge.Distance < bestOrbitalMedium.Distance)
-            {
-                bestOrbitalMedium = null; //Medium Station is irrelevant in this case due to the Large being closer.
-            }
-            if ((bestOrbitalLarge != null) && (bestPlanetary != null) && bestOrbitalLarge.Distance < bestPlanetary.Distance)
-            {
-                bestPlanetary = null; //Planetary is irrelevant in this case due to the large being closer.
-            }
-        }
-
 
         [Obsolete]
         public static bool HasMatTrader(this StarSystem system)
@@ -175,25 +74,84 @@ namespace Orcabot.Helpers
         /// <returns>The facility.</returns>
         /// <param name="systems">Systems.</param>
         /// <param name="stationFacility">Station facility.</param>
-        public static IList<Types.StarSystem> FilterFacility(this IList<Types.StarSystem> systems, StationFacility stationFacility)
+        public static IList<StarSystem> FilterFacility(this IList<StarSystem> systems, StationFacility stationFacility)
         {
             var returnList = new List<Types.StarSystem>();
-            foreach(var system in systems)
+            foreach (var system in systems)
             {
-                if(system.Stations.FilterFacility(stationFacility).Count > 0)
+                if (system.Stations.FilterFacility(stationFacility).Count > 0)
                 {
                     returnList.Add(system);
                 }
             }
             return returnList;
         }
-        public static float DistanceTo(this Types.StarSystem sys, Vector3 coordinate)
+
+        /// <summary>
+        /// Filter a list of systems with parameters
+        /// </summary>
+        /// <param name="systems">List of systems to filter through</param>
+        /// <param name="result">New list with only the filtered systems</param>
+        /// <param name="filter">Filter settings</param>
+        /// <returns>True, if atleast one system matching the filters was found</returns>
+        public static bool Filter(this IEnumerable<StarSystem> systems, SystemSearchFilter filter, out List<StarSystem> result)
         {
-            return Vector3.Distance(sys.Coordinate, coordinate);
+            if (filter.PermitName != null)
+            {
+                filter.PermitLocked = true;
+            }
+            result = new List<StarSystem>(systems);
+            List<StarSystem> remove = new List<StarSystem>();
+            if (filter.TraderType != null)
+            {
+                remove.AddRange(result.Where(system => system.MaterialTraderType != filter.TraderType));
+            }
+            if (filter.PermitLocked != null)
+            {
+                remove.AddRange(result.Where(system => system.IsPermitLocked != filter.PermitLocked.Value));
+            }
+            if (filter.PermitName != null)
+            {
+                remove.AddRange(result.Where(system => system.PermitName != filter.PermitName));
+            }
+            if (filter.Security != null)
+            {
+                remove.AddRange(result.Where(system => system.Security != filter.Security.Value));
+            }
+            result.RemoveRange(remove);
+            return result.Count > 0;
+        }
+
+        /// <summary>
+        /// Filters stations in a list of systems
+        /// </summary>
+        /// <param name="systems">Enumerable to filter through</param>
+        /// <param name="systemFilter">system filter to apply</param>
+        /// <param name="stationFilter">station filter to apply</param>
+        /// <param name="result">a resulting new List with all stations</param>
+        /// <returns></returns>
+        public static bool FilterStations(this IEnumerable<StarSystem> systems, SystemSearchFilter systemFilter, StationSearchFilter stationFilter, out List<Station> result)
+        {
+            result = new List<Station>();
+            if (systems.Filter(systemFilter, out var validSystems))
+            {
+                foreach (StarSystem system in validSystems)
+                {
+                    if (system.FilterStations(stationFilter, out List<Station> stations))
+                    {
+                        result.AddRange(stations);
+                    }
+                }
+                return result.Count > 0;
+            }
+            else
+            {
+                return false;
+            }
         }
 
         [Obsolete]
-        public static float DistanceTo(this Coordinate c1,Coordinate c2)
+        public static float DistanceTo(this Coordinate c1, Coordinate c2)
         {
             var X = c1.X - c2.X;
             var Y = c1.Y - c2.Y;
