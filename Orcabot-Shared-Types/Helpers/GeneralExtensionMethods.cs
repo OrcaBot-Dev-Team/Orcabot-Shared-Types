@@ -18,5 +18,14 @@ namespace Orcabot.Helpers
                 collection.Remove(item);
             }
         }
+
+        /// <summary>
+        /// Removes a range of items specified in <paramref name="remove"/> from <paramref name="collection"/>, and then calls <see cref="ICollection{T}.Clear"/> on <paramref name="remove"/>
+        /// </summary>
+        public static void RemoveClear<T>(this ICollection<T> collection, ICollection<T> remove)
+        {
+            collection.RemoveRange(remove);
+            remove.Clear();
+        }
     }
 }

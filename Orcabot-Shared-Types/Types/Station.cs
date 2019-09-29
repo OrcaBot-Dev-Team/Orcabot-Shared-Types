@@ -46,6 +46,7 @@ namespace Orcabot.Types
         /// <summary>
         /// The system this station is found in
         /// </summary>
+        [JsonIgnore]
         public StarSystem CurrentSystem { get; internal set; }
         /// <summary>
         /// The largest pad available at a station.

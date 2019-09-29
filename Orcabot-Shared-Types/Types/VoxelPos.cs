@@ -7,7 +7,7 @@ namespace Orcabot.Types
 {
     public struct VoxelPos
     {
-        public const int VOXELSIZE = 5;
+        public const int VOXELSIZE = 25;
 
         public int X;
         public int Y;

@@ -4,7 +4,7 @@ namespace Orcabot.Types.Enums
     /// <summary>
     /// Gives the maximum Pad size at a facility. Although Values like "Small" are not used ingame, they might become relevant in the future.
     /// </summary>
-    public enum PadSize
+    public enum PadSize : byte
     {
         Unknown = 0,
         None = 1,
@@ -49,7 +49,7 @@ namespace Orcabot.Types.Enums
     /// <summary>
     /// Defines a system's/station's economy.
     /// </summary>
-    public enum Economy
+    public enum Economy : byte
     {
         Unknown = 0,
         Colony,
@@ -67,7 +67,7 @@ namespace Orcabot.Types.Enums
         Damaged,
         Agriculture
     }
-    public enum SystemSecurity
+    public enum SystemSecurity : byte
     {
         Unknown = 0,
         Low = 16,
@@ -101,7 +101,7 @@ namespace Orcabot.Types.Enums
     }
     namespace Ranks
     {
-        public enum Combat
+        public enum Combat : sbyte
         {
             Unknown = -1,
             Harmless,
@@ -114,7 +114,7 @@ namespace Orcabot.Types.Enums
             Deadly,
             Elite
         }
-        public enum Trade
+        public enum Trade : sbyte
         {
             Unknown = -1,
             Penniless,
@@ -127,7 +127,7 @@ namespace Orcabot.Types.Enums
             Tycoon,
             Elite
         }
-        public enum Explore
+        public enum Explore : sbyte
         {
             Unknown = -1,
             Aimless,
@@ -140,7 +140,7 @@ namespace Orcabot.Types.Enums
             Pioneer,
             Elite
         }
-        public enum CQC
+        public enum CQC : sbyte
         {
             Unknown = -1,
             Helpless,
@@ -153,7 +153,7 @@ namespace Orcabot.Types.Enums
             Legend,
             Elite
         }
-        public enum Federation
+        public enum Federation : sbyte
         {
             Unknown = -1,
             None,
@@ -171,7 +171,7 @@ namespace Orcabot.Types.Enums
             ViceAdmiral,
             Admiral
         }
-        public enum Empire
+        public enum Empire : sbyte
         {
             Unknown = -1,
             None,
@@ -189,12 +189,6 @@ namespace Orcabot.Types.Enums
             Duke,
             Prince,
             King
-        }
-
-        public enum DistanceType
-        {
-            LightYears,
-            TravelSeconds
         }
     }
 }

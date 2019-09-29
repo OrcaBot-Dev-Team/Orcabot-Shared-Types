@@ -10,6 +10,8 @@ namespace Orcabot.Types
 {
     public class Galaxy
     {
+        #region Fields & Properties
+
         private readonly Dictionary<string, StarSystem> systems = new Dictionary<string, StarSystem>();
         private readonly Dictionary<Vector3, SystemVoxel> voxels = new Dictionary<Vector3, SystemVoxel>();
         private readonly Dictionary<TraderType, HashSet<StarSystem>> materialTraders = new Dictionary<TraderType, HashSet<StarSystem>>();
@@ -18,7 +20,15 @@ namespace Orcabot.Types
         /// Count of all loaded systems
         /// </summary>
         public int SystemCount => systems.Count;
+
+        /// <summary>
+        /// Amount of voxels
+        /// </summary>
         public int VoxelCount => voxels.Count;
+
+        /// <summary>
+        /// Amount of material trader systems
+        /// </summary>
         public int Tradercount
         {
             get
@@ -32,6 +42,18 @@ namespace Orcabot.Types
             }
         }
 
+        /// <summary>
+        /// All systems stored
+        /// </summary>
+        public ICollection<StarSystem> AllSystems => systems.Values;
+
+        #endregion
+        #region Constructor
+
+        /// <summary>
+        /// Constructs a new <see cref="Galaxy"/> object
+        /// </summary>
+        /// <param name="systemEnumerable">Enumerable of systems contained in the galaxy</param>
         public Galaxy(IEnumerable<StarSystem> systemEnumerable)
         {
             foreach (StarSystem system in systemEnumerable)
@@ -67,19 +89,35 @@ namespace Orcabot.Types
             systemCollection.Add(system);
         }
 
+        #endregion
+        #region Accessing Systems
 
-        public IReadOnlyList<DistanceWrapper<StarSystem>> GetSortedSystemsNear(Vector3 position, int maxDistance = 100, SystemSearchFilter? filter = null)
+        /// <summary>
+        /// Sorts <see cref="StarSystem"/>s relative to a the reference <paramref name="position"/>, with a result <paramref name="radius"/>
+        /// </summary>
+        /// <param name="position">Reference position to sort systems towards</param>
+        /// <param name="radius">Radius to choose voxels from</param>
+        /// <param name="filter">If not null, only sorts and returns systems matching the filter settings</param>
+        /// <returns>Sorted list of <see cref="StarSystem"/>s wrapped in <see cref="DistanceWrapper{StarSystem}"/> structs</returns>
+        public IReadOnlyList<DistanceWrapper<StarSystem>> GetSortedSystemsNear(Vector3 position, int radius = 100, SystemSearchFilter? filter = null)
         {
-            IReadOnlyList<StarSystem> systemsNear = GetSystemsNear(position, maxDistance, filter);
+            IReadOnlyList<StarSystem> systemsNear = GetSystemsNear(position, radius, filter);
             DistanceSortedList<StarSystem> sortedSystems = systemsNear.GetDistanceSortedList(position);
             return sortedSystems.Sorted;
         }
 
-        public List<StarSystem> GetSystemsNear(Vector3 position, int maxDistance = 100, SystemSearchFilter? filter = null)
+        /// <summary>
+        /// Retrieves <see cref="StarSystem"/>s relative to a the reference <paramref name="position"/>, with a result <paramref name="radius"/>
+        /// </summary>
+        /// <param name="position">Reference position to sort systems towards</param>
+        /// <param name="radius">Radius to choose voxels from</param>
+        /// <param name="filter">If not null, only sorts and returns systems matching the filter settings</param>
+        /// <returns>List of <see cref="StarSystem"/>s</returns>
+        public List<StarSystem> GetSystemsNear(Vector3 position, int radius = 100, SystemSearchFilter? filter = null)
         {
             IReadOnlyList<DistanceWrapper<SystemVoxel>> orderedVoxels = GetVoxelsSorted(position);
 
-            int maxDistanceSquared = maxDistance * maxDistance;
+            int maxDistanceSquared = radius * radius;
 
             List<StarSystem> systemsNear = new List<StarSystem>();
             foreach (DistanceWrapper<SystemVoxel> voxelWrapper in orderedVoxels)
@@ -97,6 +135,12 @@ namespace Orcabot.Types
             return systemsNear;
         }
 
+        /// <summary>
+        /// Attempts to retrieve a system by name
+        /// </summary>
+        /// <param name="systemName">System name to filter for</param>
+        /// <param name="system">Result, if one is found</param>
+        /// <returns>True, if a matching system is found</returns>
         public bool TryGetSystem(string systemName, out StarSystem system)
         {
             return systems.TryGetValue(systemName, out system);
@@ -120,23 +164,62 @@ namespace Orcabot.Types
             return false;
         }
 
+        /// <summary>
+        /// Sorts all stored <see cref="StarSystem"/>s to a reference <paramref name="position"/>
+        /// </summary>
+        /// <param name="position">Reference position to sort systems towards</param>
+        /// <param name="filter">If not null, only sorts and returns systems matching the filter settings</param>
+        /// <returns>Sorted list of <see cref="StarSystem"/>s wrapped in <see cref="DistanceWrapper{StarSystem}"/> structs</returns>
+        public IReadOnlyList<DistanceWrapper<StarSystem>> SortAllSystems(Vector3 position, SystemSearchFilter? filter)
+        {
+            if (filter.HasValue)
+            {
+                if (FilterAllSystems(filter.Value, out List<StarSystem> filteredSystems))
+                {
+                    DistanceSortedList<StarSystem> sorted = filteredSystems.GetDistanceSortedList(position);
+                    return sorted.Sorted;
+                }
+                else
+                {
+                    return new List<DistanceWrapper<StarSystem>>(0);
+                }
+            }
+            else
+            {
+                DistanceSortedList<StarSystem> sorted = systems.Values.GetDistanceSortedList(position);
+                return sorted.Sorted;
+            }
+        }
+
+        /// <summary>
+        /// Filters all <see cref="StarSystem"/>s
+        /// </summary>
+        /// <param name="filter">Filter to apply</param>
+        /// <param name="filteredSystems">List of <see cref="StarSystem"/>s matching the filter</param>
+        /// <returns>True, if more than one result was returned</returns>
+        public bool FilterAllSystems(SystemSearchFilter filter, out List<StarSystem> filteredSystems)
+        {
+            return systems.Values.Filter(filter, out filteredSystems);
+        }
+
+        #endregion
+
         private class SystemVoxel : IDistanceProvider
         {
-            private const int LIGHTSECONDSPERLIGHTYEAR = 31557600;
             public readonly VoxelPos Center;
 
             private readonly HashSet<StarSystem> systems;
             private readonly Dictionary<TraderType, HashSet<StarSystem>> MaterialTraders = new Dictionary<TraderType, HashSet<StarSystem>>();
 
-            public ICollection<StarSystem> Systems { get { return systems; } }
+            internal ICollection<StarSystem> Systems { get { return systems; } }
 
-            public SystemVoxel(VoxelPos center)
+            internal SystemVoxel(VoxelPos center)
             {
                 Center = center;
                 systems = new HashSet<StarSystem>();
             }
 
-            public SystemVoxel(VoxelPos center, IEnumerable<StarSystem> systems)
+            internal SystemVoxel(VoxelPos center, IEnumerable<StarSystem> systems)
             {
                 Center = center;
                 this.systems = new HashSet<StarSystem>(systems);
@@ -164,7 +247,7 @@ namespace Orcabot.Types
                 systemCollection.Add(system);
             }
 
-            public void AddSystem(StarSystem system)
+            internal void AddSystem(StarSystem system)
             {
                 systems.Add(system);
                 if (system.HasMaterialTrader)
@@ -173,37 +256,22 @@ namespace Orcabot.Types
                 }
             }
 
-            public bool TryGetMaterialTradersOrderedByDistance(TraderType type, Vector3 position, out IReadOnlyList<DistanceWrapper<StarSystem>> result)
-            {
-                if (MaterialTraders.TryGetValue(type, out HashSet<StarSystem> systems))
-                {
-                    DistanceSortedList<StarSystem> list = systems.GetDistanceSortedList(position);
-                    result = list.Sorted;
-                    return true;
-                }
-                result = null;
-                return false;
-            }
-
-            public bool HasMaterialTrader(TraderType type)
-            {
-                return MaterialTraders.ContainsKey(type);
-            }
-
             public float GetDistanceSquaredTo(Vector3 position)
             {
                 return Vector3.DistanceSquared((Vector3)Center, position);
             }
 
-            public static float LightYearsToLightSeconds(float lightyears)
-            {
-                return lightyears * LIGHTSECONDSPERLIGHTYEAR;
-            }
+        }
+        private const int LIGHTSECONDSPERLIGHTYEAR = 31557600;
 
-            public static float LightSecondsToLightYears(float lightseconds)
-            {
-                return lightseconds / LIGHTSECONDSPERLIGHTYEAR;
-            }
+        public static float LightYearsToLightSeconds(float lightyears)
+        {
+            return lightyears * LIGHTSECONDSPERLIGHTYEAR;
+        }
+
+        public static float LightSecondsToLightYears(float lightseconds)
+        {
+            return lightseconds / LIGHTSECONDSPERLIGHTYEAR;
         }
     }
 
