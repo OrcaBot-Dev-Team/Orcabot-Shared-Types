@@ -4,6 +4,8 @@ VisualStudioVersion = 16.0.29306.81
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Orcabot-Shared-Types", "OrcaBot-Shared-Types\Orcabot-Shared-Types.csproj", "{505B43C4-DD46-4012-92F5-D00D5B577ED1}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OrcaBot-Shared-Types-Tester", "OrcaBot-Shared-Types-Tester\OrcaBot-Shared-Types-Tester.csproj", "{5458F13E-2DBD-4D74-A0FD-117FD749847E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -14,6 +16,10 @@ Global
 		{505B43C4-DD46-4012-92F5-D00D5B577ED1}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{505B43C4-DD46-4012-92F5-D00D5B577ED1}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{505B43C4-DD46-4012-92F5-D00D5B577ED1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5458F13E-2DBD-4D74-A0FD-117FD749847E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5458F13E-2DBD-4D74-A0FD-117FD749847E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5458F13E-2DBD-4D74-A0FD-117FD749847E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5458F13E-2DBD-4D74-A0FD-117FD749847E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

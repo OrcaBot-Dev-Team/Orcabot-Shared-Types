@@ -19,6 +19,6 @@ namespace Orcabot.Types
         public Federation FederationRank { get; set; }
         public Empire ImperialRank { get; set; }
         #endregion
-        public Types.System LastKnownLocation { get; set; }
+        public Types.StarSystem LastKnownLocation { get; set; }
     }
 }
