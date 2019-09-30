@@ -4,7 +4,7 @@ namespace Orcabot.Types.Enums
     /// <summary>
     /// Gives the maximum Pad size at a facility. Although Values like "Small" are not used ingame, they might become relevant in the future.
     /// </summary>
-    public enum PadSize
+    public enum PadSize : byte
     {
         Unknown = 0,
         None = 1,
@@ -15,33 +15,41 @@ namespace Orcabot.Types.Enums
     /// <summary>
     /// Represents a Station Facility. Unknown is for when a facility cannot be parsed because of a wrong format
     /// </summary>
-    public enum StationFacility
+    public enum StationFacility : byte
     {
         Unknown = 0,
-        Market,
-        InterstellarFactors,
-        Refuel,
-        Repair,
-        Restock,
-        Shipyard,
-        TraderUnknown,
-        TraderEncoded,
-        TraderRaw,
-        TraderManufactured,
-        BlackMarket,
-        Outfitting,
-        Contacts,
-        UniversalCartographics,
-        Missions,
-        CrewLounge,
-        RemoteEngineering,
-        SearchAndResque,
-        TechnologyBroker
+        Market = 1,
+        InterstellarFactors = 2,
+        Refuel = 3,
+        Repair = 4,
+        Restock = 5,
+        Shipyard = 6,
+        BlackMarket = 7,
+        Outfitting = 8,
+        Contacts = 9,
+        UniversalCartographics = 10,
+        Missions = 11,
+        CrewLounge = 12,
+        RemoteEngineering = 13,
+        SearchAndResque = 14,
+        TechnologyBroker = 15,
+        TraderUnknown = 16,
+        TraderEncoded = 18,
+        TraderRaw = 19,
+        TraderManufactured = 20,
+    }
+    public enum TraderType : byte
+    {
+        NoTrader = 0,
+        TraderUnknown = 16,
+        TraderEncoded = 18,
+        TraderRaw = 19,
+        TraderManufactured = 20,
     }
     /// <summary>
     /// Defines a system's/station's economy.
     /// </summary>
-    public enum Economy
+    public enum Economy : byte
     {
         Unknown = 0,
         Colony,
@@ -59,7 +67,7 @@ namespace Orcabot.Types.Enums
         Damaged,
         Agriculture
     }
-    public enum Security
+    public enum SystemSecurity : byte
     {
         Unknown = 0,
         Low = 16,
@@ -70,22 +78,30 @@ namespace Orcabot.Types.Enums
     /// <summary>
     /// Defines the Station type. Some of these might not be used (not written to the JSON)
     /// </summary>
-    public enum StationType
+    public enum StationType : byte
     {
         Unknown = 0,
-        Coriolis,
-        Ocellus,
-        Orbis,
-        Outpost,
-        AsteroidBase,
-        Installation,
-        MegaShip,
-        SurfaceStation,
-        SurfaceSettlement
+        Installation = 1,
+        SurfaceSettlement = 2,
+        SurfaceStation = 3,
+        Outpost = 4,
+        MegaShip = 5,
+        Coriolis = 6,
+        Ocellus = 7,
+        Orbis = 8,
+        AsteroidBase = 9
+    }
+    public enum RelevantStationType : byte
+    {
+        Unknown = 0,
+        Unlandable = 1,
+        Planetary = 2,
+        OrbitalMedium = 3,
+        OrbitalLarge = 4
     }
     namespace Ranks
     {
-        public enum Combat
+        public enum Combat : sbyte
         {
             Unknown = -1,
             Harmless,
@@ -98,7 +114,7 @@ namespace Orcabot.Types.Enums
             Deadly,
             Elite
         }
-        public enum Trade
+        public enum Trade : sbyte
         {
             Unknown = -1,
             Penniless,
@@ -111,7 +127,7 @@ namespace Orcabot.Types.Enums
             Tycoon,
             Elite
         }
-        public enum Explore
+        public enum Explore : sbyte
         {
             Unknown = -1,
             Aimless,
@@ -124,7 +140,7 @@ namespace Orcabot.Types.Enums
             Pioneer,
             Elite
         }
-        public enum CQC
+        public enum CQC : sbyte
         {
             Unknown = -1,
             Helpless,
@@ -137,7 +153,7 @@ namespace Orcabot.Types.Enums
             Legend,
             Elite
         }
-        public enum Federation
+        public enum Federation : sbyte
         {
             Unknown = -1,
             None,
@@ -155,7 +171,7 @@ namespace Orcabot.Types.Enums
             ViceAdmiral,
             Admiral
         }
-        public enum Empire
+        public enum Empire : sbyte
         {
             Unknown = -1,
             None,

@@ -3,86 +3,38 @@ using Orcabot.Types;
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Orcabot.Helpers
 {
     public static class StationHelper
     {
-        public static bool HasFacility(this Station station, StationFacility facility)
-        {
-            return station.StationFacilities.Contains(facility);
-        }
-
         /// <summary>
-        /// Filter the specified stationList by Facility. Only Stations with the given Facility remain.
+        /// Filter a list of stations with parameters
         /// </summary>
-        /// <returns>Subset of the given Station List that have the given Facility</returns>
-        /// <param name="stationList">Station list.</param>
-        /// <param name="facility">Facility to filter after</param>
-        public static IList<Station>FilterFacility(this IList<Station> stationList, StationFacility facility) 
+        /// <param name="stations">List of stations to filter through</param>
+        /// <param name="filter">Filter configuration</param>
+        /// <returns>True, if atleast one station matching the filters was found</returns>
+        public static bool Filter(this IEnumerable<Station> stations, StationSearchFilter filter, out List<Station> result)
         {
-            IList<Station> returnList = new List<Station>();
-            foreach(var element in stationList)
+            result = new List<Station>(stations);
+            List<Station> remove = new List<Station>();
+            if (filter.Type != null)
             {
-                if (element.HasFacility(facility))
-                {
-                    returnList.Add(element);
-                }
+                remove.AddRange(result.Where(station => station.Type != filter.Type.Value));
+                result.RemoveClear(result);
             }
-            return returnList;
-        }
-
-        /// <summary>
-        /// Returns wether or not a ship of certain padSize can land at this station
-        /// </summary>
-        /// <param name="station">The Station to check</param>
-        /// <param name="padSize">Check if station has landing pad</param>
-        /// <returns></returns>
-        public static bool HasLandingPad(this Station station,PadSize padSize)
-        {
-            var stationPad = station.GetPadSize();
-            if(padSize == PadSize.Unknown)
+            if (filter.Facility != null)
             {
-                return false;
+                remove.AddRange(result.Where(station => !station.HasFacility(filter.Facility.Value)));
+                result.RemoveClear(result);
             }
-            return (padSize <= stationPad);
-        }
-        public static IList<Station> FilterLandingPad(this IList<Station> stationList, PadSize padSize)
-        {
-            var returnList = new List<Station>();
-            foreach(var element in stationList)
+            if (filter.MinPadSize != null)
             {
-                if (element.HasLandingPad(padSize))
-                {
-                    returnList.Add(element);
-                }
+                remove.AddRange(result.Where(station => !station.CanLand(filter.MinPadSize.Value)));
+                result.RemoveClear(result);
             }
-            return returnList;
-        }
-        public static bool IsPlanetary(this Station s) {
-            return s.Type == StationType.SurfaceSettlement || s.Type == StationType.SurfaceStation;
-        }
-        public static PadSize GetPadSize(this Station s) {
-            if(
-                s.Type == StationType.AsteroidBase ||
-                s.Type == StationType.Coriolis ||
-                s.Type == StationType.MegaShip ||
-                s.Type == StationType.Ocellus ||
-                s.Type == StationType.Orbis ||
-                s.Type == StationType.SurfaceStation
-                ) {
-                return PadSize.Large;
-            }else if(
-                s.Type == StationType.Outpost
-                ) {
-                return PadSize.Medium;
-            }
-            else {
-                return PadSize.None;
-            }
-        }
-        public static bool HasMatTrader(this Station s) {
-            return s.HasFacility(StationFacility.TraderRaw) || s.HasFacility(StationFacility.TraderManufactured) || s.HasFacility(StationFacility.TraderEncoded);
+            return result.Count > 0;
         }
     }
 }

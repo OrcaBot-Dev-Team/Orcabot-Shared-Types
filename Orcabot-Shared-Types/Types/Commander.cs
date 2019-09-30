@@ -18,6 +18,6 @@ namespace Orcabot.Types
         public Explore ExplorationRank { get; set; }
         public Federation FederationRank { get; set; }
         #endregion
-        public Types.System LastKnownLocation { get; set; }
+        public Types.StarSystem LastKnownLocation { get; set; }
     }
 }
