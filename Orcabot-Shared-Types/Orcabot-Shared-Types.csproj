@@ -16,7 +16,7 @@
     <StartupObject />
     <Description>A collection of Types used by the Orcabot and Orcabot tools</Description>
     <Version>1.0.4</Version>
-    <PackageReleaseNotes>Added Missing Imperial Rank</PackageReleaseNotes>
+    <PackageReleaseNotes></PackageReleaseNotes>
   </PropertyGroup>
 
   <ItemGroup>
